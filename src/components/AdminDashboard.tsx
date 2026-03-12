@@ -31,14 +31,16 @@ export default function AdminDashboard() {
     setLoading(true);
     setError("");
     try {
-      // We'll try to fetch from the backend which will proxy the Google Sheet
-      const res = await fetch("/api/admin/guests");
+      // Try to fetch directly from Google Script to avoid backend dependency on Vercel
+      const scriptUrl = import.meta.env.VITE_GOOGLE_SHEET_URL || "https://script.google.com/macros/s/AKfycbxXhu53lT7Kv6wlp0gSM9fjuF2Nd-bPUGW0W99Re19WG5NjkkVcnYCR4cnY150-5Dkw/exec";
+      
+      const res = await fetch(scriptUrl);
       if (!res.ok) throw new Error("Error al obtener los datos");
       const data = await res.json();
       setGuests(data);
     } catch (err) {
       console.error(err);
-      setError("No se pudieron cargar los invitados. Asegúrate de que el script de Google tenga la función doGet y esté publicado como 'Cualquier persona'.");
+      setError("No se pudieron cargar los invitados. Verifica que el script de Google esté publicado como 'Cualquier persona' y que la URL sea correcta.");
     } finally {
       setLoading(false);
     }
