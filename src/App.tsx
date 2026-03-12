@@ -180,9 +180,11 @@ function InvitationPage() {
     const payload = {
       ...formData,
       status: action === 'confirm' ? 'Confirmado' : 'Cancelado',
-      members: action === 'confirm' ? formData.members : 0,
+      members: action === 'confirm' ? Number(formData.members) : 0,
       date: new Date().toISOString()
     };
+
+    console.log("Enviando RSVP:", payload);
 
     try {
       await fetch(scriptUrl, {
