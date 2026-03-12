@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { 
   MapPin, 
   Calendar, 
@@ -16,6 +17,8 @@ import {
   Navigation
 } from "lucide-react";
 import { cn } from "./lib/utils";
+import LoginPage from "./components/LoginPage";
+import AdminDashboard from "./components/AdminDashboard";
 
 // --- Components ---
 
@@ -46,7 +49,7 @@ const HotelCard = ({ name, description, image, price }: { name: string; descript
   </motion.div>
 );
 
-export default function App() {
+function InvitationPage() {
   const [hasEntered, setHasEntered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -71,6 +74,7 @@ export default function App() {
   };
 
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isGoogleAuth, setIsGoogleAuth] = useState(false);
   
@@ -168,25 +172,34 @@ export default function App() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent, action: 'confirm' | 'cancel' = 'confirm') => {
+    if (e) e.preventDefault();
     
-    const scriptUrl = import.meta.env.VITE_GOOGLE_SHEET_URL;
+    const scriptUrl = import.meta.env.VITE_GOOGLE_SHEET_URL || "https://script.google.com/macros/s/AKfycbxXhu53lT7Kv6wlp0gSM9fjuF2Nd-bPUGW0W99Re19WG5NjkkVcnYCR4cnY150-5Dkw/exec";
 
-    if (scriptUrl) {
-      try {
-        await fetch(scriptUrl, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify(formData)
-        });
-      } catch (e) {
-        console.error("Error sending to Google Sheets:", e);
-      }
+    const payload = {
+      ...formData,
+      status: action === 'confirm' ? 'Confirmado' : 'Cancelado',
+      members: action === 'confirm' ? formData.members : 0,
+      date: new Date().toISOString()
+    };
+
+    try {
+      await fetch(scriptUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "text/plain",
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (error) {
+      console.error("Error sending RSVP:", error);
     }
     
-    // Show success message
+    if (action === 'cancel') {
+      setIsCancelling(true);
+    }
     setIsSubmitted(true);
   };
 
@@ -263,6 +276,22 @@ export default function App() {
             transition={{ delay: 0.5 }}
             className="flex flex-col items-center"
           >
+            {/* Scroll Indicator - Above the text */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.5, duration: 1 }}
+              className="flex flex-col items-center gap-1 text-white/30 mb-12 md:mb-16"
+            >
+              <motion.div
+                animate={{ y: [0, 5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </motion.div>
+              <span className="text-[9px] uppercase tracking-[0.4em] font-light">Desliza</span>
+            </motion.div>
+
             <span className="text-lg md:text-xl text-white/90 font-light mb-2">
               Estás invitado a celebrar
             </span>
@@ -469,7 +498,7 @@ export default function App() {
                 <p className="text-stone-400">Por favor, confirma antes del 4 de julio.</p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={(e) => handleSubmit(e, 'confirm')} className="space-y-6">
                 <div>
                   <label className="block text-xs uppercase tracking-widest font-bold mb-2 text-stone-400">Nombre de la Familia</label>
                   <input 
@@ -522,12 +551,28 @@ export default function App() {
                   ></textarea>
                 </div>
 
-                <button 
-                  type="submit"
-                  className="w-full py-5 bg-[#d4af37] text-stone-900 rounded-xl font-bold uppercase tracking-widest text-sm hover:bg-[#c5a028] transition-all shadow-lg active:scale-95"
-                >
-                  Confirmar Asistencia
-                </button>
+                <div className="flex flex-col gap-4 pt-2">
+                  <button 
+                    type="submit"
+                    className="w-full py-5 bg-[#d4af37] text-stone-900 rounded-xl font-bold uppercase tracking-widest text-sm hover:bg-[#c5a028] transition-all shadow-lg active:scale-95"
+                  >
+                    Confirmar Asistencia
+                  </button>
+                  
+                  <button 
+                    type="button"
+                    onClick={(e) => {
+                      if(formData.familyName) {
+                        handleSubmit(e as any, 'cancel');
+                      } else {
+                        alert("Por favor ingresa el nombre de tu familia para cancelar.");
+                      }
+                    }}
+                    className="w-full py-4 bg-transparent text-stone-400 border border-stone-600 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-stone-700/50 hover:text-white transition-all"
+                  >
+                    No podré asistir
+                  </button>
+                </div>
               </form>
             </motion.div>
           ) : (
@@ -552,7 +597,7 @@ export default function App() {
                 transition={{ delay: 0.5 }}
                 className="font-display text-5xl md:text-6xl mb-6 text-[#d4af37]"
               >
-                ¡Muchas Gracias!
+                {isCancelling ? "Entendido" : "¡Muchas Gracias!"}
               </motion.h2>
               
               <motion.div
@@ -562,10 +607,14 @@ export default function App() {
                 className="space-y-4"
               >
                 <p className="font-serif text-2xl md:text-3xl italic text-stone-200">
-                  "¡Te esperamos con mucha alegría!"
+                  {isCancelling 
+                    ? "Lamentamos que no puedas acompañarnos." 
+                    : "¡Te esperamos con mucha alegría!"}
                 </p>
                 <p className="text-stone-400 text-lg">
-                  Prepárate para disfrutar de la mejor fiesta del año.
+                  {isCancelling 
+                    ? "Gracias por avisarnos, ¡nos vemos en la próxima!" 
+                    : "Prepárate para disfrutar de la mejor fiesta del año."}
                 </p>
               </motion.div>
 
@@ -596,5 +645,18 @@ export default function App() {
         <p className="text-xs uppercase tracking-widest">© 2026 • Invitación Creada con Amor</p>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<InvitationPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/dashboard" element={<AdminDashboard />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

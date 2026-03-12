@@ -89,6 +89,20 @@ app.post("/api/rsvp", async (req, res) => {
   }
 });
 
+app.get("/api/admin/guests", async (req, res) => {
+  const scriptUrl = process.env.VITE_GOOGLE_SHEET_URL || "https://script.google.com/macros/s/AKfycbxXhu53lT7Kv6wlp0gSM9fjuF2Nd-bPUGW0W99Re19WG5NjkkVcnYCR4cnY150-5Dkw/exec";
+
+  try {
+    const response = await fetch(scriptUrl);
+    if (!response.ok) throw new Error("Failed to fetch from Google Script");
+    const guests = await response.json();
+    res.json(guests);
+  } catch (error: any) {
+    console.error("Error fetching guests from script:", error);
+    res.status(500).json({ error: "No se pudieron cargar los invitados. Verifica que el script tenga la función doGet y esté publicado como 'Cualquier persona'." });
+  }
+});
+
 app.get("/api/auth/status", (req, res) => {
   res.json({ authenticated: !!tokens });
 });
