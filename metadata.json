@@ -1,0 +1,7 @@
+{
+  "name": "Invitación de Cumpleaños Mágica",
+  "description": "Una invitación de cumpleaños inmersiva con efectos parallax, mapa de ubicación, recomendaciones de hoteles y registro de asistencia integrado con Google Sheets.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
