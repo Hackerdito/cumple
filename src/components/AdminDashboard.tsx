@@ -31,10 +31,12 @@ export default function AdminDashboard() {
     setLoading(true);
     setError("");
     try {
-      // Try to fetch directly from Google Script to avoid backend dependency on Vercel
+      // Add a timestamp to avoid browser caching (cache-busting)
+      const timestamp = new Date().getTime();
       const scriptUrl = import.meta.env.VITE_GOOGLE_SHEET_URL || "https://script.google.com/macros/s/AKfycbxXhu53lT7Kv6wlp0gSM9fjuF2Nd-bPUGW0W99Re19WG5NjkkVcnYCR4cnY150-5Dkw/exec";
+      const urlWithCacheBuster = `${scriptUrl}${scriptUrl.includes('?') ? '&' : '?'}t=${timestamp}`;
       
-      const res = await fetch(scriptUrl);
+      const res = await fetch(urlWithCacheBuster);
       if (!res.ok) throw new Error("Error al obtener los datos");
       const data = await res.json();
       setGuests(data);
@@ -51,7 +53,7 @@ export default function AdminDashboard() {
     navigate("/login");
   };
 
-  const confirmedGuests = guests.filter(g => g.status !== 'Cancelado');
+  const confirmedGuests = guests.filter(g => g.status?.toLowerCase() !== 'cancelado');
   const totalGuests = confirmedGuests.reduce((acc, guest) => acc + Number(guest.members), 0);
   const tablesNeeded = Math.ceil(totalGuests / 10); // Assuming 10 people per table
 
@@ -141,7 +143,7 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 font-medium text-stone-800">{guest.familyName}</td>
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                          guest.status === 'Cancelado' 
+                          guest.status?.toLowerCase() === 'cancelado' 
                             ? 'bg-red-50 text-red-500' 
                             : 'bg-emerald-50 text-emerald-600'
                         }`}>
