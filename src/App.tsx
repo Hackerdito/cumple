@@ -16,11 +16,25 @@ import {
   VolumeX,
   Navigation,
   X,
-  MessageCircle
+  MessageCircle,
+  Search,
+  Trash2,
+  AlertCircle
 } from "lucide-react";
 import { cn } from "./lib/utils";
 import LoginPage from "./components/LoginPage";
 import AdminDashboard from "./components/AdminDashboard";
+import { db } from "./firebase";
+import { 
+  collection, 
+  addDoc, 
+  query, 
+  where, 
+  getDocs, 
+  updateDoc, 
+  doc, 
+  serverTimestamp 
+} from "firebase/firestore";
 
 // --- Components ---
 
@@ -184,6 +198,12 @@ function InvitationPage() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isGoogleAuth, setIsGoogleAuth] = useState(false);
+  const [generatedId, setGeneratedId] = useState("");
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelSearch, setCancelSearch] = useState("");
+  const [cancelResults, setCancelResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
   
   const [formData, setFormData] = useState({
     familyName: "",
@@ -279,37 +299,79 @@ function InvitationPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent, action: 'confirm' | 'cancel' = 'confirm') => {
+  const handleSubmit = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
     
-    const scriptUrl = import.meta.env.VITE_GOOGLE_SHEET_URL || "https://script.google.com/macros/s/AKfycbxXhu53lT7Kv6wlp0gSM9fjuF2Nd-bPUGW0W99Re19WG5NjkkVcnYCR4cnY150-5Dkw/exec";
-
+    const shortId = `FAM-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+    
     const payload = {
-      ...formData,
-      status: action === 'confirm' ? 'Confirmado' : 'Cancelado',
-      members: action === 'confirm' ? Number(formData.members) : 0,
-      date: new Date().toISOString()
+      familyName: formData.familyName,
+      members: Number(formData.members),
+      hotel: formData.hotel,
+      message: formData.message,
+      status: 'Confirmado',
+      createdAt: serverTimestamp(),
+      guestId: shortId
     };
 
-    console.log("Enviando RSVP:", payload);
+    console.log("Guardando RSVP en Firebase:", payload);
 
     try {
-      await fetch(scriptUrl, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "text/plain",
-        },
-        body: JSON.stringify(payload),
-      });
+      await addDoc(collection(db, "guests"), payload);
+      setGeneratedId(shortId);
+      setIsSubmitted(true);
     } catch (error) {
-      console.error("Error sending RSVP:", error);
+      console.error("Error saving RSVP:", error);
+      alert("Hubo un error al guardar tu confirmación. Por favor intenta de nuevo.");
     }
+  };
+
+  const handleCancelSearch = async () => {
+    if (!cancelSearch.trim()) return;
     
-    if (action === 'cancel') {
-      setIsCancelling(true);
+    setIsSearching(true);
+    setSearchError("");
+    setCancelResults([]);
+
+    try {
+      const guestsRef = collection(db, "guests");
+      // Search by ID or Family Name
+      let q = query(guestsRef, where("guestId", "==", cancelSearch.trim().toUpperCase()));
+      let snapshot = await getDocs(q);
+      
+      if (snapshot.empty) {
+        // Try searching by family name (case sensitive in Firestore, so we might need to be careful)
+        q = query(guestsRef, where("familyName", "==", cancelSearch.trim()));
+        snapshot = await getDocs(q);
+      }
+
+      if (snapshot.empty) {
+        setSearchError("No encontramos ninguna invitación con ese ID o nombre de familia.");
+      } else {
+        const results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setCancelResults(results);
+      }
+    } catch (error) {
+      console.error("Error searching for guest:", error);
+      setSearchError("Error al buscar. Intenta de nuevo.");
+    } finally {
+      setIsSearching(false);
     }
-    setIsSubmitted(true);
+  };
+
+  const confirmCancellation = async (docId: string) => {
+    try {
+      const guestRef = doc(db, "guests", docId);
+      await updateDoc(guestRef, {
+        status: 'Cancelado'
+      });
+      setIsCancelling(true);
+      setIsSubmitted(true);
+      setShowCancelModal(false);
+    } catch (error) {
+      console.error("Error cancelling RSVP:", error);
+      alert("Error al cancelar. Intenta de nuevo.");
+    }
   };
 
   return (
@@ -590,7 +652,7 @@ function InvitationPage() {
                 <p className="text-stone-400">Por favor, confirma antes del 4 de julio.</p>
               </div>
 
-              <form onSubmit={(e) => handleSubmit(e, 'confirm')} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-xs uppercase tracking-widest font-bold mb-2 text-stone-400">Nombre de la Familia</label>
                   <input 
@@ -653,16 +715,10 @@ function InvitationPage() {
                   
                   <button 
                     type="button"
-                    onClick={(e) => {
-                      if(formData.familyName) {
-                        handleSubmit(e as any, 'cancel');
-                      } else {
-                        alert("Por favor ingresa el nombre de tu familia para cancelar.");
-                      }
-                    }}
+                    onClick={() => setShowCancelModal(true)}
                     className="w-full py-4 bg-transparent text-stone-400 border border-stone-600 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-stone-700/50 hover:text-white transition-all"
                   >
-                    No podré asistir
+                    No podré asistir / Cancelar
                   </button>
                 </div>
               </form>
@@ -696,13 +752,22 @@ function InvitationPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
-                className="space-y-4"
+                className="space-y-6"
               >
                 <p className="font-serif text-2xl md:text-3xl italic text-stone-200">
                   {isCancelling 
                     ? "Lamentamos que no puedas acompañarnos." 
                     : "¡Te esperamos con mucha alegría!"}
                 </p>
+                
+                {!isCancelling && generatedId && (
+                  <div className="bg-stone-700/50 p-6 rounded-2xl border border-[#d4af37]/30 inline-block">
+                    <p className="text-xs uppercase tracking-widest text-stone-400 mb-2">Tu ID de Invitación</p>
+                    <p className="text-3xl font-mono font-bold text-[#d4af37] tracking-tighter">{generatedId}</p>
+                    <p className="text-[10px] text-stone-500 mt-2">Guarda este ID por si necesitas cancelar después.</p>
+                  </div>
+                )}
+
                 <p className="text-stone-400 text-lg">
                   {isCancelling 
                     ? "Gracias por avisarnos, ¡nos vemos en la próxima!" 
@@ -730,6 +795,90 @@ function InvitationPage() {
           )}
         </div>
       </Section>
+
+      {/* Cancel Modal */}
+      <AnimatePresence>
+        {showCancelModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+            onClick={() => setShowCancelModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-stone-900 text-white rounded-3xl overflow-hidden shadow-2xl w-full max-w-md border border-stone-800"
+            >
+              <div className="p-8">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-display text-2xl text-[#d4af37]">Cancelar Asistencia</h3>
+                  <button onClick={() => setShowCancelModal(false)} className="text-stone-500 hover:text-white">
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <p className="text-stone-400 text-sm mb-6">
+                  Ingresa tu ID de invitación o el nombre de tu familia tal como lo registraste.
+                </p>
+
+                <div className="space-y-4">
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+                    <input 
+                      type="text" 
+                      value={cancelSearch}
+                      onChange={(e) => setCancelSearch(e.target.value)}
+                      placeholder="ID (FAM-XXXX) o Familia..."
+                      className="w-full bg-stone-800 border-none rounded-xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-[#d4af37]/50 transition-all outline-none"
+                    />
+                  </div>
+                  
+                  <button 
+                    onClick={handleCancelSearch}
+                    disabled={isSearching}
+                    className="w-full py-4 bg-stone-700 hover:bg-stone-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+                  >
+                    {isSearching ? "Buscando..." : "Buscar Invitación"}
+                  </button>
+
+                  {searchError && (
+                    <div className="flex items-center gap-2 text-red-400 text-xs bg-red-400/10 p-3 rounded-lg">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      {searchError}
+                    </div>
+                  )}
+
+                  <div className="space-y-3 mt-6">
+                    {cancelResults.map((guest) => (
+                      <div key={guest.id} className="bg-stone-800/50 p-4 rounded-xl border border-stone-700 flex justify-between items-center">
+                        <div>
+                          <p className="font-bold text-stone-200">{guest.familyName}</p>
+                          <p className="text-[10px] text-stone-500 uppercase tracking-widest">{guest.guestId}</p>
+                        </div>
+                        {guest.status === 'Cancelado' ? (
+                          <span className="text-[10px] uppercase font-bold text-red-500 bg-red-500/10 px-2 py-1 rounded">Ya Cancelado</span>
+                        ) : (
+                          <button 
+                            onClick={() => confirmCancellation(guest.id)}
+                            className="p-2 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition-all"
+                            title="Confirmar Cancelación"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Footer */}
       <footer className="py-12 bg-stone-900 text-stone-500 text-center border-t border-stone-800">

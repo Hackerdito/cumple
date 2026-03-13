@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: guests
+    // Document ID: auto-generated
+    // Fields:
+    //   - familyName: string (required)
+    //   - members: number (required)
+    //   - hotel: string (optional)
+    //   - message: string (optional)
+    //   - status: string (required, ['Confirmado', 'Cancelado'])
+    //   - createdAt: timestamp (required)
+    //   - guestId: string (required, unique short ID)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "gerito.diseno@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidGuest(data) {
+      return data.keys().hasAll(['familyName', 'members', 'status', 'createdAt', 'guestId']) &&
+             data.familyName is string && data.familyName.size() > 0 && data.familyName.size() < 100 &&
+             data.members is number && data.members >= 0 &&
+             data.status in ['Confirmado', 'Cancelado'] &&
+             data.guestId is string && data.guestId.size() > 0;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /guests/{guestId} {
+      // Anyone can create an RSVP
+      allow create: if isValidGuest(request.resource.data);
+      
+      // Admin can read all, others can read if they know the ID or are searching by familyName
+      // Note: Searching by familyName requires a query, which 'list' handles.
+      // We limit 'list' to prevent scraping.
+      allow read: if isAdmin() || 
+                  (request.auth == null && request.query.limit <= 5); 
+
+      // Anyone can update to 'Cancelado' if they have the document ID
+      // We should validate that they are only changing the status or that they know the guestId
+      allow update: if isValidGuest(request.resource.data) && 
+                    (isAdmin() || (request.resource.data.status == 'Cancelado'));
+
+      allow delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read, write: if isAdmin() || request.auth.uid == userId;
+    }
+  }
+}

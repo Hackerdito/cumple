@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "Guest": {
+      "title": "Guest",
+      "description": "A family or individual guest invitation record",
+      "type": "object",
+      "properties": {
+        "familyName": {
+          "type": "string",
+          "description": "The name of the family or guest"
+        },
+        "members": {
+          "type": "number",
+          "description": "Number of people attending"
+        },
+        "hotel": {
+          "type": "string",
+          "description": "Selected hotel or 'Ninguno'"
+        },
+        "message": {
+          "type": "string",
+          "description": "Optional message from the guest"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Confirmado", "Cancelado"],
+          "description": "RSVP status"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the RSVP was created"
+        },
+        "guestId": {
+          "type": "string",
+          "description": "Short unique ID for the guest (e.g. FAM-1234)"
+        }
+      },
+      "required": ["familyName", "members", "status", "createdAt", "guestId"]
+    }
+  },
+  "firestore": {
+    "/guests/{guestDocId}": {
+      "schema": "Guest",
+      "description": "Collection of guest invitations"
+    }
+  }
+}

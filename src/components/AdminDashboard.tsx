@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { Users, Hotel, MessageSquare, LogOut, RefreshCw, LayoutGrid } from "lucide-react";
+import { Users, Hotel, MessageSquare, LogOut, RefreshCw, LayoutGrid, Hash } from "lucide-react";
+import { db } from "../firebase";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 
 interface Guest {
+  id: string;
   familyName: string;
   members: number;
   hotel: string;
   message: string;
-  date: string;
+  createdAt: any;
   status?: string;
+  guestId: string;
 }
 
 export default function AdminDashboard() {
@@ -22,31 +26,26 @@ export default function AdminDashboard() {
     const auth = localStorage.getItem("admin_auth");
     if (!auth) {
       navigate("/login");
-    } else {
-      fetchGuests();
+      return;
     }
-  }, [navigate]);
 
-  const fetchGuests = async () => {
     setLoading(true);
-    setError("");
-    try {
-      // Add a timestamp to avoid browser caching (cache-busting)
-      const timestamp = new Date().getTime();
-      const scriptUrl = import.meta.env.VITE_GOOGLE_SHEET_URL || "https://script.google.com/macros/s/AKfycbxXhu53lT7Kv6wlp0gSM9fjuF2Nd-bPUGW0W99Re19WG5NjkkVcnYCR4cnY150-5Dkw/exec";
-      const urlWithCacheBuster = `${scriptUrl}${scriptUrl.includes('?') ? '&' : '?'}t=${timestamp}`;
-      
-      const res = await fetch(urlWithCacheBuster);
-      if (!res.ok) throw new Error("Error al obtener los datos");
-      const data = await res.json();
-      setGuests(data);
-    } catch (err) {
-      console.error(err);
-      setError("No se pudieron cargar los invitados. Verifica que el script de Google esté publicado como 'Cualquier persona' y que la URL sea correcta.");
-    } finally {
+    const q = query(collection(db, "guests"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const guestData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Guest[];
+      setGuests(guestData);
       setLoading(false);
-    }
-  };
+    }, (err) => {
+      console.error("Error fetching guests:", err);
+      setError("Error al conectar con la base de datos.");
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("admin_auth");
@@ -109,13 +108,7 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-3xl shadow-sm border border-stone-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-stone-200 flex justify-between items-center">
             <h2 className="font-bold text-stone-800">Lista de Confirmaciones</h2>
-            <button 
-              onClick={fetchGuests}
-              className="p-2 hover:bg-stone-100 rounded-full transition-colors"
-              disabled={loading}
-            >
-              <RefreshCw className={`w-5 h-5 text-stone-500 ${loading ? 'animate-spin' : ''}`} />
-            </button>
+            <div className="text-xs text-stone-400 italic">Actualizado en tiempo real</div>
           </div>
 
           <div className="overflow-x-auto">
@@ -129,6 +122,7 @@ export default function AdminDashboard() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-stone-50 text-stone-500 text-xs uppercase tracking-widest font-bold">
+                    <th className="px-6 py-4">ID</th>
                     <th className="px-6 py-4">Familia</th>
                     <th className="px-6 py-4">Estado</th>
                     <th className="px-6 py-4">Integrantes</th>
@@ -138,8 +132,14 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100">
-                  {guests.map((guest, i) => (
-                    <tr key={i} className={`hover:bg-stone-50 transition-colors ${guest.status === 'Cancelado' ? 'opacity-60 grayscale-[0.5]' : ''}`}>
+                  {guests.map((guest) => (
+                    <tr key={guest.id} className={`hover:bg-stone-50 transition-colors ${guest.status === 'Cancelado' ? 'opacity-60 grayscale-[0.5]' : ''}`}>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1 text-stone-400 font-mono text-[10px] font-bold">
+                          <Hash className="w-3 h-3" />
+                          {guest.guestId}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 font-medium text-stone-800">{guest.familyName}</td>
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
@@ -175,7 +175,7 @@ export default function AdminDashboard() {
                         )}
                       </td>
                       <td className="px-6 py-4 text-stone-400 text-xs">
-                        {new Date(guest.date).toLocaleDateString()}
+                        {guest.createdAt?.toDate() ? guest.createdAt.toDate().toLocaleDateString() : 'Reciente'}
                       </td>
                     </tr>
                   ))}

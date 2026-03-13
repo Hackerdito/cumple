@@ -11,9 +11,9 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === "Admin" && password === "cumpleuribe") {
+    if (username === "cumple@uribe.com" && password === "cumpleuribe") {
       localStorage.setItem("admin_auth", "true");
-      navigate("/dashboard");
+      navigate("/admin");
     } else {
       setError("Usuario o contraseña incorrectos");
     }
