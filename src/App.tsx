@@ -956,7 +956,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<InvitationPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
