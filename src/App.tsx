@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { 
@@ -89,6 +89,71 @@ const hotelsData = [
     ]
   }
 ];
+
+const galleryImages = [
+  "https://fileuk.netlify.app/f_1.png",
+  "https://fileuk.netlify.app/f_2.png",
+  "https://fileuk.netlify.app/f_3.png",
+  "https://fileuk.netlify.app/f_4.png",
+  "https://fileuk.netlify.app/f_5.png",
+  "https://fileuk.netlify.app/f_6.png",
+  "https://fileuk.netlify.app/f_7.png",
+  "https://fileuk.netlify.app/f_8.png",
+  "https://fileuk.netlify.app/f_9.png",
+  "https://fileuk.netlify.app/f_10.png"
+];
+
+const PhotoPile = () => {
+  const [state, setState] = useState({ count: 1, cycle: 0 });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setState((prev) => {
+        if (prev.count >= galleryImages.length) {
+          return { count: 1, cycle: prev.cycle + 1 };
+        }
+        return { ...prev, count: prev.count + 1 };
+      });
+    }, 2500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const transforms = useMemo(() => {
+    return galleryImages.map(() => ({
+      rotate: Math.random() * 40 - 20,
+      x: Math.random() * 80 - 40,
+      y: Math.random() * 80 - 40,
+    }));
+  }, []);
+
+  return (
+    <div className="relative w-full h-[450px] md:h-[600px] flex items-center justify-center">
+      <AnimatePresence>
+        {galleryImages.slice(0, state.count).map((img, index) => (
+          <motion.div
+            key={`${index}-${state.cycle}`}
+            initial={{ opacity: 0, scale: 1.5, y: -100, rotate: transforms[index].rotate - 15 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1, 
+              x: transforms[index].x, 
+              y: transforms[index].y, 
+              rotate: transforms[index].rotate 
+            }}
+            exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.4 } }}
+            transition={{ type: "spring", damping: 15, stiffness: 100 }}
+            className="absolute w-48 md:w-64 bg-white p-2 pb-8 md:p-3 md:pb-12 shadow-2xl rounded-sm border border-stone-200"
+            style={{ zIndex: index }}
+          >
+            <div className="w-full aspect-[3/4] overflow-hidden bg-stone-100">
+              <img src={img} alt={`Gallery ${index}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            </div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 function InvitationPage() {
   const [hasEntered, setHasEntered] = useState(false);
@@ -405,22 +470,11 @@ function InvitationPage() {
       </Section>
 
       {/* Gallery & Message Section */}
-      <section className="bg-stone-50 py-12 md:py-20">
-        {/* Carousel */}
-        <div className="w-full overflow-x-auto snap-x snap-mandatory flex gap-4 px-6 pb-16 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {[
-            "https://fileuk.netlify.app/f_1.png",
-            "https://fileuk.netlify.app/f_2.png",
-            "https://fileuk.netlify.app/f_3.png"
-          ].map((img, i) => (
-            <div key={i} className="snap-center shrink-0 w-[80vw] md:w-[40vw] max-w-[350px] aspect-[3/4] rounded-2xl overflow-hidden relative">
-              <img src={img} alt={`Gallery ${i}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-            </div>
-          ))}
-        </div>
+      <section className="bg-stone-50 py-12 md:py-20 overflow-hidden">
+        <PhotoPile />
 
         {/* Apple-style Text */}
-        <div className="max-w-3xl mx-auto px-8 text-center">
+        <div className="max-w-3xl mx-auto px-8 text-center mt-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
