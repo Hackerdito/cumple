@@ -2,20 +2,37 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { Lock, User } from "lucide-react";
+import { auth } from "../firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === "cumple@uribe.com" && password === "cumpleuribe") {
+    setLoading(true);
+    setError("");
+
+    try {
+      // Intentar iniciar sesión en Firebase Auth
+      await signInWithEmailAndPassword(auth, username, password);
+      
+      // Si tiene éxito, guardar en localStorage para la persistencia de la UI
       localStorage.setItem("admin_auth", "true");
       navigate("/admin");
-    } else {
-      setError("Usuario o contraseña incorrectos");
+    } catch (err: any) {
+      console.error("Error de login:", err);
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        setError("Usuario o contraseña incorrectos");
+      } else {
+        setError("Error al conectar con el servidor de autenticación");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,9 +84,10 @@ export default function LoginPage() {
 
           <button 
             type="submit"
-            className="w-full py-4 bg-[#d4af37] text-stone-900 rounded-xl font-bold uppercase tracking-widest text-sm hover:bg-[#c5a028] transition-all shadow-lg"
+            disabled={loading}
+            className="w-full py-4 bg-[#d4af37] text-stone-900 rounded-xl font-bold uppercase tracking-widest text-sm hover:bg-[#c5a028] transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Entrar
+            {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
       </motion.div>

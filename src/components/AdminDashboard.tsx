@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { Users, Hotel, MessageSquare, LogOut, RefreshCw, LayoutGrid, Hash } from "lucide-react";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { signOut } from "firebase/auth";
 
 interface Guest {
   id: string;
@@ -47,9 +48,14 @@ export default function AdminDashboard() {
     return () => unsubscribe();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("admin_auth");
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem("admin_auth");
+      navigate("/login");
+    } catch (err) {
+      console.error("Error al cerrar sesión:", err);
+    }
   };
 
   const confirmedGuests = guests.filter(g => g.status?.toLowerCase() !== 'cancelado');
