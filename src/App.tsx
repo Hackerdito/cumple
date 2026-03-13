@@ -14,7 +14,9 @@ import {
   Gift,
   Music,
   VolumeX,
-  Navigation
+  Navigation,
+  X,
+  MessageCircle
 } from "lucide-react";
 import { cn } from "./lib/utils";
 import LoginPage from "./components/LoginPage";
@@ -28,7 +30,7 @@ const Section = ({ children, className, id }: { children: React.ReactNode; class
   </section>
 );
 
-const HotelCard = ({ name, description, image, price }: { name: string; description: string; image: string; price: string }) => (
+const HotelCard = ({ name, description, image, price, onClick }: { name: string; description: string; image: string; price: string; onClick?: () => void }) => (
   <motion.div 
     whileHover={{ y: -10 }}
     className="bg-white rounded-2xl overflow-hidden shadow-lg border border-stone-100 group"
@@ -42,16 +44,56 @@ const HotelCard = ({ name, description, image, price }: { name: string; descript
     <div className="p-6">
       <h3 className="font-display text-xl mb-2 text-stone-800">{name}</h3>
       <p className="text-stone-600 text-sm leading-relaxed">{description}</p>
-      <button className="mt-4 text-stone-800 font-semibold text-sm flex items-center gap-2 hover:gap-3 transition-all">
-        <MapPin className="w-4 h-4" /> Ver ubicación
+      <button onClick={onClick} className="mt-4 text-stone-800 font-semibold text-sm flex items-center gap-2 hover:gap-3 transition-all">
+        <MapPin className="w-4 h-4" /> Ver más
       </button>
     </div>
   </motion.div>
 );
 
+const hotelsData = [
+  {
+    name: "Hotel Boutique El Santuario",
+    description: "Vistas espectaculares al lago y spa de clase mundial.",
+    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800",
+    price: "$$$",
+    whatsapp: "521234567890",
+    mapsUrl: "https://maps.app.goo.gl/QDRvATSPmPvQ7K7AA",
+    images: [
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=800"
+    ]
+  },
+  {
+    name: "Posada del Sol",
+    description: "Estilo rústico encantador en el corazón del pueblo.",
+    image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&q=80&w=800",
+    price: "$$",
+    whatsapp: "521234567890",
+    mapsUrl: "https://maps.app.goo.gl/QDRvATSPmPvQ7K7AA",
+    images: [
+      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&q=80&w=800"
+    ]
+  },
+  {
+    name: "Cabañas Bosque Azul",
+    description: "Privacidad total y contacto directo con la naturaleza.",
+    image: "https://images.unsplash.com/photo-1449156001935-d28bc3972451?auto=format&fit=crop&q=80&w=800",
+    price: "$$",
+    whatsapp: "521234567890",
+    mapsUrl: "https://maps.app.goo.gl/QDRvATSPmPvQ7K7AA",
+    images: [
+      "https://images.unsplash.com/photo-1449156001935-d28bc3972451?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1470165301023-58dab8118cc9?auto=format&fit=crop&q=80&w=800"
+    ]
+  }
+];
+
 function InvitationPage() {
   const [hasEntered, setHasEntered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedHotel, setSelectedHotel] = useState<typeof hotelsData[0] | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -283,15 +325,15 @@ function InvitationPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5, duration: 1 }}
-              className="flex flex-col items-center gap-1 text-white/30 mb-12 md:mb-16"
+              className="flex flex-col items-center gap-2 text-white/50 mb-12 md:mb-16"
             >
               <motion.div
-                animate={{ y: [0, 5, 0] }}
+                animate={{ y: [0, 8, 0] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               >
-                <ChevronDown className="w-4 h-4" />
+                <ChevronDown className="w-8 h-8 md:w-10 md:h-10" />
               </motion.div>
-              <span className="text-[9px] uppercase tracking-[0.4em] font-light">Desliza</span>
+              <span className="text-xs md:text-sm uppercase tracking-[0.4em] font-medium">Desliza</span>
             </motion.div>
 
             <span className="text-lg md:text-xl text-white/90 font-light mb-2">
@@ -315,7 +357,7 @@ function InvitationPage() {
               </div>
               <div className="flex items-center justify-center gap-1.5 md:gap-2 text-white/80">
                 <MapPin className="w-4 h-4" />
-                <span>Tecozautla Hgo</span>
+                <span>Tecozautla, Hidalgo.</span>
               </div>
             </div>
 
@@ -387,7 +429,9 @@ function InvitationPage() {
             className="space-y-8 text-lg md:text-2xl text-stone-700 font-light leading-relaxed tracking-wide"
           >
             <p>
-              Cumplir 62 años es un motivo de alegría y gratitud.<br className="hidden md:block" />
+              Cumplir 62 años es un motivo de alegría y gratitud.
+            </p>
+            <p>
               Ha sido un camino lleno de experiencias, retos y sueños que siguen vivos.
             </p>
             <p>
@@ -428,7 +472,7 @@ function InvitationPage() {
                 Ver en Google Maps
               </a>
               <a 
-                href="https://waze.com/ul?q=Azucena%203%20Sur%2035%20Morelos,%20Tecozautla,%20Hgo." 
+                href="https://waze.com/ul?q=Azucena%20%2334%20tecozautla&navigate=yes" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-8 py-3 border border-stone-800 text-stone-800 rounded-full hover:bg-stone-800 hover:text-white transition-all"
@@ -464,24 +508,16 @@ function InvitationPage() {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <HotelCard 
-              name="Hotel Boutique El Santuario"
-              description="Vistas espectaculares al lago y spa de clase mundial."
-              image="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800"
-              price="$$$"
-            />
-            <HotelCard 
-              name="Posada del Sol"
-              description="Estilo rústico encantador en el corazón del pueblo."
-              image="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&q=80&w=800"
-              price="$$"
-            />
-            <HotelCard 
-              name="Cabañas Bosque Azul"
-              description="Privacidad total y contacto directo con la naturaleza."
-              image="https://images.unsplash.com/photo-1449156001935-d28bc3972451?auto=format&fit=crop&q=80&w=800"
-              price="$$"
-            />
+            {hotelsData.map((hotel, index) => (
+              <HotelCard 
+                key={index}
+                name={hotel.name}
+                description={hotel.description}
+                image={hotel.image}
+                price={hotel.price}
+                onClick={() => setSelectedHotel(hotel)}
+              />
+            ))}
           </div>
         </div>
       </Section>
@@ -646,6 +682,67 @@ function InvitationPage() {
         <p className="font-serif italic text-lg mb-2">"La vida es mejor cuando la celebramos juntos"</p>
         <p className="text-xs uppercase tracking-widest">© 2026 • Invitación Creada con Amor</p>
       </footer>
+
+      {/* Hotel Modal */}
+      <AnimatePresence>
+        {selectedHotel && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setSelectedHotel(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl overflow-hidden shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col"
+            >
+              <div className="relative h-64 shrink-0">
+                <img src={selectedHotel.image} alt={selectedHotel.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <button 
+                  onClick={() => setSelectedHotel(null)}
+                  className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-bold text-stone-800">
+                  {selectedHotel.price}
+                </div>
+              </div>
+              
+              <div className="p-6 md:p-8 overflow-y-auto">
+                <h3 className="font-display text-3xl mb-2 text-stone-800">{selectedHotel.name}</h3>
+                <p className="text-stone-600 mb-8 leading-relaxed">{selectedHotel.description}</p>
+                
+                <div className="grid gap-4">
+                  <a 
+                    href={`https://wa.me/${selectedHotel.whatsapp}?text=Hola,%20me%20interesa%20reservar%20una%20habitaci%C3%B3n.`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-3 w-full py-4 bg-[#25D366] text-white rounded-xl font-bold hover:bg-[#20bd5a] transition-colors"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    Contactar por WhatsApp
+                  </a>
+                  
+                  <a 
+                    href={selectedHotel.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-3 w-full py-4 bg-stone-100 text-stone-800 rounded-xl font-bold hover:bg-stone-200 transition-colors"
+                  >
+                    <MapPin className="w-5 h-5" />
+                    Ver en Google Maps
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
