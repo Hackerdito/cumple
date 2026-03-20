@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
+import { motion, useScroll, useTransform, AnimatePresence, useMotionValueEvent } from "motion/react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { 
   MapPin, 
@@ -9,6 +9,8 @@ import {
   Users, 
   CheckCircle2, 
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Sparkles,
   Heart,
   Gift,
@@ -19,7 +21,16 @@ import {
   MessageCircle,
   Search,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Info,
+  Phone,
+  Wifi,
+  Car,
+  Waves,
+  Wind,
+  Baby,
+  Tv,
+  Utensils
 } from "lucide-react";
 import { cn } from "./lib/utils";
 import LoginPage from "./components/LoginPage";
@@ -59,7 +70,7 @@ const HotelCard = ({ name, description, image, price, onClick }: { name: string;
       <h3 className="font-display text-xl mb-2 text-stone-800">{name}</h3>
       <p className="text-stone-600 text-sm leading-relaxed">{description}</p>
       <button onClick={onClick} className="mt-4 text-stone-800 font-semibold text-sm flex items-center gap-2 hover:gap-3 transition-all">
-        <MapPin className="w-4 h-4" /> Ver más
+        <Info className="w-4 h-4" /> Ver más
       </button>
     </div>
   </motion.div>
@@ -67,39 +78,77 @@ const HotelCard = ({ name, description, image, price, onClick }: { name: string;
 
 const hotelsData = [
   {
-    name: "Hotel Boutique El Santuario",
-    description: "Vistas espectaculares al lago y spa de clase mundial.",
-    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800",
-    price: "$$$",
-    whatsapp: "521234567890",
-    mapsUrl: "https://maps.app.goo.gl/QDRvATSPmPvQ7K7AA",
+    name: "Hotel La Terracita",
+    description: "Excelente ubicación y comodidad para tu estancia.",
+    image: "https://lh3.googleusercontent.com/gps-cs-s/AHVAweo7pLowOoPzJh7yOu_TbMnNOg_LIqIFDRxj4H8tSeTeOmzYD8N1-MAD0esLXKSpTf_WemRyDTJAR4X2SBGi1_o9OFb9PzxXDQ1nZSEt63skMI-jIANL0-1R6KkMRtxoQYb6194=s1360-w1360-h1020-rw",
+    price: "Desde $600",
+    whatsapp: "527731449012",
+    phone: "7617335017",
+    mapsUrl: "https://maps.app.goo.gl/2E2q9tD9csULnzvv7",
+    anticipation: "Reserva con 1 mes de anticipación",
+    amenities: [
+      { icon: <Wifi className="w-4 h-4" />, text: "Wi-Fi gratis" },
+      { icon: <Car className="w-4 h-4" />, text: "Estacionamiento gratuito" },
+      { icon: <Waves className="w-4 h-4" />, text: "Piscina" },
+      { icon: <Wind className="w-4 h-4" />, text: "Aire acondicionado" },
+      { icon: <Baby className="w-4 h-4" />, text: "Apto para niños" }
+    ],
+    pricesList: [
+      { type: "Habitación sencilla", price: "$600" },
+      { type: "Habitación King", price: "$650" },
+      { type: "Habitación 2 camas", price: "$850" },
+      { type: "Habitación 3 camas", price: "$950" }
+    ],
     images: [
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800",
-      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=800"
+      "https://a.otcdn.com/imglib/hotelphotos/3/8/1463/hotel-la-terracita-tecozautla-749-20200430025749.jpg",
+      "https://a.otcdn.com/imglib/hotelphotos/3/8/1463/hotel-la-terracita-tecozautla-803-20200430025803.jpg",
+      "https://a.otcdn.com/imglib/hotelphotos/3/8/1463/hotel-la-terracita-tecozautla-752-20200430025752.jpg"
     ]
   },
   {
-    name: "Posada del Sol",
-    description: "Estilo rústico encantador en el corazón del pueblo.",
-    image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&q=80&w=800",
-    price: "$$",
-    whatsapp: "521234567890",
-    mapsUrl: "https://maps.app.goo.gl/QDRvATSPmPvQ7K7AA",
+    name: "Real del Campanario",
+    description: "Excelente opción con todas las comodidades para tu estancia.",
+    image: "https://anunciantes.mexicodesconocido.com.mx/storage/6cU5PChxMJiU3fPJLssBDgvtLJGr6WsT5JncE5fR.jpg",
+    price: "Desde $1,200",
+    whatsapp: "527731093772",
+    phone: "7731093772",
+    mapsUrl: "https://maps.app.goo.gl/muoXTSaL2td4RYin6",
+    amenities: [
+      { icon: <Wifi className="w-4 h-4" />, text: "Wi-Fi gratis" },
+      { icon: <Car className="w-4 h-4" />, text: "Estacionamiento" },
+      { icon: <Wind className="w-4 h-4" />, text: "Aire acondicionado" },
+      { icon: <Baby className="w-4 h-4" />, text: "Apto para niños" },
+      { icon: <Tv className="w-4 h-4" />, text: "TV por cable" }
+    ],
+    pricesList: [
+      { type: "Habitación sencilla", price: "$1,200" },
+      { type: "Habitación King", price: "$1,500" },
+      { type: "Habitación doble", price: "$1,900" }
+    ],
     images: [
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&q=80&w=800",
-      "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&q=80&w=800"
+      "https://scontent.fmex43-1.fna.fbcdn.net/v/t39.30808-6/488071644_2436557180023622_6880195104870248429_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=13d280&_nc_ohc=2Gwm66RExV4Q7kNvwE2szh7&_nc_oc=AdozVQ8DTWxL2YJ5An1nllcWncBX_2JHc5I-T9zMwjHQE8GD540VSS6JGkHT36iHWK8b5tPucqHxHXMhRRXqGcCG&_nc_zt=23&_nc_ht=scontent.fmex43-1.fna&_nc_gid=ohShW0tD4kdrbghjpgyhZQ&_nc_ss=7a30f&oh=00_Afw6zb-88Q5jm1I1SD6XkQdag8a96cFuNJaveQSb2MvoMw&oe=69C2B3C8",
+      "https://scontent.fmex43-1.fna.fbcdn.net/v/t39.30808-6/488333302_2436557166690290_951208158836529109_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=13d280&_nc_ohc=s5f8PZZvBXAQ7kNvwF4k_ih&_nc_oc=Adp24Gm4uZGFCAmG6SanCqQ2mR6ih7dEuYlkhJKjfJpZ4zbb0JyxLxMxieajl1Ve8tvkVLWt0yqbaXViPATgy1UT&_nc_zt=23&_nc_ht=scontent.fmex43-1.fna&_nc_gid=EkafAKu9PTpsHAxqc5VxHA&_nc_ss=7a30f&oh=00_AfxLgdz4jo4p1wA8Ky1o9Q3lQ6dv6D7wKEgRXRQ6w5dpjQ&oe=69C29CFB",
+      "https://scontent.fmex43-1.fna.fbcdn.net/v/t39.30808-6/488183979_2436557266690280_7262475888508696036_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=13d280&_nc_ohc=hZ2-wzC0QJ4Q7kNvwHK33Om&_nc_oc=AdoYdrYhBiYmiUO52jPs6I8FoCA5_8x-LbQJLyJl6huny8rY943_0jpkNRhoPJ0Uw6CKGcXdnp573JpnJdz0CED8&_nc_zt=23&_nc_ht=scontent.fmex43-1.fna&_nc_gid=oFSPp3Js-F9wWRVBAheRQw&_nc_ss=7a30f&oh=00_AfwjF2xxEzm6rUfrA7G5Ud-bzhbU2Ar6AHhmz0DXlTXP5w&oe=69C290C8"
     ]
   },
   {
-    name: "Cabañas Bosque Azul",
-    description: "Privacidad total y contacto directo con la naturaleza.",
-    image: "https://images.unsplash.com/photo-1449156001935-d28bc3972451?auto=format&fit=crop&q=80&w=800",
-    price: "$$",
-    whatsapp: "521234567890",
-    mapsUrl: "https://maps.app.goo.gl/QDRvATSPmPvQ7K7AA",
+    name: "Hotel del Valle",
+    description: "Confort y excelente servicio para una estancia inolvidable.",
+    image: "https://lh3.googleusercontent.com/gps-cs-s/AHVAweqa0s-kfFRyPzWAF227xhq6PJSknxhFczv2Bl5zMDgxXwenm8qPKGaTUaUPtC1VvGByVPxnaXvCVqLoCv0C4gP31Hq2Llybgweuy39Qj2FidtF9u71A6MCtDPtCOKvOnh5mHplH=s1360-w1360-h1020-rw",
+    price: "Desde $944",
+    whatsapp: "527731019760",
+    phone: "7731019760",
+    mapsUrl: "https://maps.app.goo.gl/LzPhQE5T3QwKFxrP7",
+    amenities: [
+      { icon: <Wifi className="w-4 h-4" />, text: "Wi-Fi gratis" },
+      { icon: <Car className="w-4 h-4" />, text: "Estacionamiento gratuito" },
+      { icon: <Wind className="w-4 h-4" />, text: "Aire acondicionado" },
+      { icon: <Utensils className="w-4 h-4" />, text: "Restaurante" }
+    ],
     images: [
-      "https://images.unsplash.com/photo-1449156001935-d28bc3972451?auto=format&fit=crop&q=80&w=800",
-      "https://images.unsplash.com/photo-1470165301023-58dab8118cc9?auto=format&fit=crop&q=80&w=800"
+      "https://lh3.googleusercontent.com/gps-cs-s/AHVAweo6mNy3K_H3Ah3sbrp8JmT74FeCZUGvm__XJbgxKKEoN30In2v6yjm4kW8aUIC6VrtZQLZPNCAav20VVs4O9tEC_GPTNWY8HE6PG4ZBU4Kkvl2qD2mzP56R_JGeFLWC180bc9_U-g=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/AHVAweqL3iu072OMa1obqf08_9swG5pSThfFZnoBg8q8YPS0sT9bffojJt6jOqWXXthYE9sGk6tQcPnfTbKkm9xPEz-2vsaP-XCIY4ls3OaSozZDpaWRxIH7jBviDZlk4mZFbICs4XF3=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/AHVAweo_5XL_ZZrEDCy9F6WdFhz4AIdANskgwZDVbJDHUjSPyzdF08HyuoOo6NUJqnV0HhOCdvQ1FUhZ2P4weVmKkC9K40FsrLpvLv4aOVi5hK43IHk798qJLssZwnZz-7VPTjt8Vm25hw=s1360-w1360-h1020-rw"
     ]
   }
 ];
@@ -171,8 +220,10 @@ const PhotoPile = () => {
 
 function InvitationPage() {
   const [hasEntered, setHasEntered] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedHotel, setSelectedHotel] = useState<typeof hotelsData[0] | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -196,8 +247,6 @@ function InvitationPage() {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [isGoogleAuth, setIsGoogleAuth] = useState(false);
   const [generatedId, setGeneratedId] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelSearch, setCancelSearch] = useState("");
@@ -218,7 +267,7 @@ function InvitationPage() {
     title: "Mi Fiesta de 62 Años",
     description: "¡Te espero para celebrar mis 62 años!",
     location: "Hacienda Los Olivos, Valle de Bravo",
-    startTime: "20260718T150000",
+    startTime: "20260718T160000",
     endTime: "20260718T210000"
   };
 
@@ -248,26 +297,19 @@ function InvitationPage() {
     document.body.removeChild(link);
   };
 
-  const { scrollYProgress } = useScroll({
+  const { scrollYProgress, scrollY } = useScroll({
     offset: ["start start", "end end"]
+  });
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    if (latest > 10 && !hasScrolled) {
+      setHasScrolled(true);
+    }
   });
 
   const y1 = useTransform(scrollYProgress, [0, 0.5], [0, -100]);
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 1.1]);
-  const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-
-  useEffect(() => {
-    checkAuthStatus();
-    
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
-        setIsGoogleAuth(true);
-        setIsAuthenticating(false);
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  const opacity = useTransform(scrollY, [0, 10], [1, 0]);
 
   useEffect(() => {
     if (!hasEntered) {
@@ -276,28 +318,6 @@ function InvitationPage() {
       document.body.style.overflow = 'unset';
     }
   }, [hasEntered]);
-
-  const checkAuthStatus = async () => {
-    try {
-      const res = await fetch("/api/auth/status");
-      const data = await res.json();
-      setIsGoogleAuth(data.authenticated);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleGoogleAuth = async () => {
-    setIsAuthenticating(true);
-    try {
-      const res = await fetch("/api/auth/url");
-      const { url } = await res.json();
-      window.open(url, 'google_auth', 'width=600,height=700');
-    } catch (e) {
-      console.error(e);
-      setIsAuthenticating(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -428,12 +448,34 @@ function InvitationPage() {
       </AnimatePresence>
       {/* Hero Section with Parallax */}
       <Section className="relative bg-black pb-12 overflow-hidden">
+        <AnimatePresence>
+          {hasEntered && !hasScrolled && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
+              style={{ opacity }}
+              className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"
+            >
+              <div className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)] rounded-full flex items-center gap-2 text-white">
+                <span className="text-xs uppercase tracking-[0.2em] font-medium">Desliza</span>
+                <motion.div
+                  animate={{ y: [0, 4, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.div 
           style={{ y: y1, scale }}
           className="absolute top-0 left-0 w-full h-[80vh] md:h-[85vh] z-0"
         >
           <img 
-            src="https://fileuk.netlify.app/62.png" 
+            src="https://fileuk.netlify.app/64.png" 
             className="w-full h-full object-cover object-top"
             referrerPolicy="no-referrer"
           />
@@ -447,27 +489,11 @@ function InvitationPage() {
             transition={{ delay: 0.5 }}
             className="flex flex-col items-center"
           >
-            {/* Scroll Indicator - Above the text */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.5, duration: 1 }}
-              className="flex flex-col items-center gap-2 text-white/50 mb-12 md:mb-16"
-            >
-              <motion.div
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <ChevronDown className="w-8 h-8 md:w-10 md:h-10" />
-              </motion.div>
-              <span className="text-xs md:text-sm uppercase tracking-[0.4em] font-medium">Desliza</span>
-            </motion.div>
-
             <span className="text-lg md:text-xl text-white/90 font-light mb-2">
               Estás invitado a celebrar
             </span>
             <h1 className="font-display text-[5.5rem] leading-[0.9] md:text-9xl text-white mb-10">
-              <span className="italic">Mis</span> 62<br/>Años
+              <span className="italic">Mis</span> 64<br/>Años
             </h1>
             
             <div className="flex flex-col items-center gap-2.5 md:gap-3 mb-10 text-white/90 text-sm md:text-lg font-light whitespace-nowrap">
@@ -479,7 +505,7 @@ function InvitationPage() {
                 <div className="w-px h-4 md:h-6 bg-white/40 mx-3 md:mx-6"></div>
                 <div className="flex items-center gap-1.5 md:gap-2">
                   <Clock className="w-4 h-4" />
-                  <span>15:00 Horas</span>
+                  <span>16:00 Horas</span>
                 </div>
               </div>
               <div className="flex items-center justify-center gap-1.5 md:gap-2 text-white/80">
@@ -545,7 +571,7 @@ function InvitationPage() {
             className="space-y-8 text-lg md:text-2xl text-stone-700 font-light leading-relaxed tracking-wide"
           >
             <p>
-              Cumplir 62 años es un motivo de alegría y gratitud.
+              Cumplir 64 años es un motivo de alegría y gratitud.
             </p>
             <p>
               Ha sido un camino lleno de experiencias, retos y sueños que siguen vivos.
@@ -568,12 +594,15 @@ function InvitationPage() {
               <MapPin className="w-4 h-4" />
               <span className="uppercase tracking-widest text-xs font-bold">Lugar del Evento</span>
             </div>
-            <h2 className="font-display text-4xl md:text-5xl mb-6 text-stone-800">Salón Hacienda Tecozautla</h2>
+            <h2 className="font-display text-4xl md:text-5xl mb-6 text-stone-800 flex flex-col gap-2">
+              <span className="text-2xl md:text-3xl text-stone-500 font-serif italic">Salón</span>
+              <span>La casa de la cantera</span>
+            </h2>
             <div className="flex flex-col gap-4 text-stone-600 mb-8 font-serif text-lg italic">
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 mt-1 shrink-0" />
                 <div className="space-y-4">
-                  <p>La recepción dará inicio a partir de las 14:30 horas. Será un gusto compartir una tarde llena de alegría,</p>
+                  <p>La recepción dará inicio a partir de las 15:30 horas. Será un gusto compartir una tarde llena de alegría,</p>
                 </div>
               </div>
             </div>
@@ -600,8 +629,8 @@ function InvitationPage() {
           </div>
           <div className="order-1 md:order-2 rounded-3xl overflow-hidden shadow-2xl h-[400px] bg-stone-200">
             <img 
-              src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80" 
-              alt="Salón Hacienda Tecozautla" 
+              src="https://fileuk.netlify.app/Salon.png" 
+              alt="Salón La casa de la cantera" 
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
@@ -617,9 +646,11 @@ function InvitationPage() {
               <Hotel className="w-4 h-4" />
               <span className="uppercase tracking-widest text-xs font-bold">Hospedaje</span>
             </div>
-            <h2 className="font-display text-4xl md:text-5xl text-stone-800">Dónde Quedarse</h2>
+            <h2 className="font-display text-4xl md:text-5xl text-stone-800">¿Dónde Quedarse?</h2>
             <p className="text-stone-500 mt-4 max-w-2xl mx-auto">
               Hemos seleccionado las mejores opciones cercanas para que disfrutes la fiesta sin preocupaciones.
+              <br/><br/>
+              <span className="text-sm italic">Nota: Estas son solo sugerencias por su cercanía al salón. Siéntete libre de elegir el hotel de tu preferencia.</span>
             </p>
           </div>
           
@@ -631,7 +662,10 @@ function InvitationPage() {
                 description={hotel.description}
                 image={hotel.image}
                 price={hotel.price}
-                onClick={() => setSelectedHotel(hotel)}
+                onClick={() => {
+                  setSelectedHotel(hotel);
+                  setCurrentImageIndex(0);
+                }}
               />
             ))}
           </div>
@@ -649,7 +683,7 @@ function InvitationPage() {
             >
               <div className="text-center mb-12">
                 <h2 className="font-display text-4xl md:text-5xl mb-4">Confirma tu Asistencia</h2>
-                <p className="text-stone-400">Por favor, confirma antes del 4 de julio.</p>
+                <p className="text-stone-400">Por favor, confirma antes del 1 de julio.</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -660,7 +694,7 @@ function InvitationPage() {
                     type="text" 
                     value={formData.familyName}
                     onChange={(e) => setFormData({...formData, familyName: e.target.value})}
-                    placeholder="Ej. Familia García"
+                    placeholder="Ej. Familia García Rodríguez"
                     className="w-full bg-stone-700 border-none rounded-xl px-6 py-4 focus:ring-2 focus:ring-stone-500 transition-all outline-none"
                   />
                 </div>
@@ -903,8 +937,55 @@ function InvitationPage() {
               onClick={(e) => e.stopPropagation()}
               className="bg-white rounded-3xl overflow-hidden shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col"
             >
-              <div className="relative h-64 shrink-0">
-                <img src={selectedHotel.image} alt={selectedHotel.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              <div className="relative h-64 shrink-0 group">
+                {(() => {
+                  const allImages = selectedHotel.images && selectedHotel.images.length > 0 
+                    ? selectedHotel.images 
+                    : [selectedHotel.image];
+                  
+                  return (
+                    <>
+                      <img 
+                        src={allImages[currentImageIndex]} 
+                        alt={selectedHotel.name} 
+                        className="w-full h-full object-cover transition-opacity duration-300" 
+                        referrerPolicy="no-referrer" 
+                      />
+                      
+                      {allImages.length > 1 && (
+                        <>
+                          <button 
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              setCurrentImageIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1)); 
+                            }}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-colors"
+                          >
+                            <ChevronLeft className="w-5 h-5" />
+                          </button>
+                          <button 
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              setCurrentImageIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1)); 
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-colors"
+                          >
+                            <ChevronRight className="w-5 h-5" />
+                          </button>
+                          <div className="absolute bottom-4 right-4 flex gap-1.5">
+                            {allImages.map((_, idx) => (
+                              <div 
+                                key={idx} 
+                                className={cn("w-2 h-2 rounded-full transition-colors", idx === currentImageIndex ? "bg-white" : "bg-white/50")} 
+                              />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
+
                 <button 
                   onClick={() => setSelectedHotel(null)}
                   className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-colors"
@@ -918,8 +999,43 @@ function InvitationPage() {
               
               <div className="p-6 md:p-8 overflow-y-auto">
                 <h3 className="font-display text-3xl mb-2 text-stone-800">{selectedHotel.name}</h3>
-                <p className="text-stone-600 mb-8 leading-relaxed">{selectedHotel.description}</p>
+                <p className="text-stone-600 mb-6 leading-relaxed">{selectedHotel.description}</p>
                 
+                {selectedHotel.anticipation && (
+                  <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-amber-800">
+                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                    <p className="text-sm font-medium">{selectedHotel.anticipation}</p>
+                  </div>
+                )}
+
+                {selectedHotel.pricesList && (
+                  <div className="mb-8">
+                    <h4 className="font-bold text-stone-800 mb-3">Tipos de Habitación</h4>
+                    <ul className="space-y-2">
+                      {selectedHotel.pricesList.map((item, idx) => (
+                        <li key={idx} className="flex justify-between items-center py-2 border-b border-stone-100 last:border-0">
+                          <span className="text-stone-600">{item.type}</span>
+                          <span className="font-bold text-stone-800">{item.price}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {selectedHotel.amenities && (
+                  <div className="mb-8">
+                    <h4 className="font-bold text-stone-800 mb-3">Servicios</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      {selectedHotel.amenities.map((amenity, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-stone-600 text-sm">
+                          <div className="text-stone-400">{amenity.icon}</div>
+                          <span>{amenity.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid gap-4">
                   <a 
                     href={`https://wa.me/${selectedHotel.whatsapp}?text=Hola,%20me%20interesa%20reservar%20una%20habitaci%C3%B3n.`}
@@ -930,6 +1046,16 @@ function InvitationPage() {
                     <MessageCircle className="w-5 h-5" />
                     Contactar por WhatsApp
                   </a>
+                  
+                  {selectedHotel.phone && (
+                    <a 
+                      href={`tel:${selectedHotel.phone}`}
+                      className="flex items-center justify-center gap-3 w-full py-4 bg-stone-800 text-white rounded-xl font-bold hover:bg-stone-900 transition-colors"
+                    >
+                      <Phone className="w-5 h-5" />
+                      Llamar al Hotel
+                    </a>
+                  )}
                   
                   <a 
                     href={selectedHotel.mapsUrl}
