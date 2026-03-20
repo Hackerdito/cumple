@@ -85,7 +85,7 @@ const hotelsData = [
     whatsapp: "527731449012",
     phone: "7617335017",
     mapsUrl: "https://maps.app.goo.gl/2E2q9tD9csULnzvv7",
-    anticipation: "Reserva con 1 mes de anticipación",
+    anticipation: "Sugerimos reservar con 1 mes de anticipación por alta demanda en esas fechas.",
     amenities: [
       { icon: <Wifi className="w-4 h-4" />, text: "Wi-Fi gratis" },
       { icon: <Car className="w-4 h-4" />, text: "Estacionamiento gratuito" },
@@ -113,6 +113,7 @@ const hotelsData = [
     whatsapp: "527731093772",
     phone: "7731093772",
     mapsUrl: "https://maps.app.goo.gl/muoXTSaL2td4RYin6",
+    anticipation: "Sugerimos reservar con 1 mes de anticipación por alta demanda en esas fechas.",
     amenities: [
       { icon: <Wifi className="w-4 h-4" />, text: "Wi-Fi gratis" },
       { icon: <Car className="w-4 h-4" />, text: "Estacionamiento" },
@@ -139,6 +140,7 @@ const hotelsData = [
     whatsapp: "527731019760",
     phone: "7731019760",
     mapsUrl: "https://maps.app.goo.gl/LzPhQE5T3QwKFxrP7",
+    anticipation: "Sugerimos reservar con 1 mes de anticipación por alta demanda en esas fechas.",
     amenities: [
       { icon: <Wifi className="w-4 h-4" />, text: "Wi-Fi gratis" },
       { icon: <Car className="w-4 h-4" />, text: "Estacionamiento gratuito" },
@@ -264,8 +266,8 @@ function InvitationPage() {
   const [showCalendarOptions, setShowCalendarOptions] = useState(false);
   
   const event = {
-    title: "Mi Fiesta de 62 Años",
-    description: "¡Te espero para celebrar mis 62 años!",
+    title: "Mi Fiesta de 64 Años",
+    description: "¡Te espero para celebrar mis 64 años!",
     location: "Hacienda Los Olivos, Valle de Bravo",
     startTime: "20260718T160000",
     endTime: "20260718T210000"
@@ -474,11 +476,15 @@ function InvitationPage() {
           style={{ y: y1, scale }}
           className="absolute top-0 left-0 w-full h-[80vh] md:h-[85vh] z-0"
         >
-          <img 
-            src="https://fileuk.netlify.app/64.png" 
-            className="w-full h-full object-cover object-top"
-            referrerPolicy="no-referrer"
-          />
+          <picture>
+            <source media="(min-width: 768px)" srcSet="https://fileuk.netlify.app/64_desk.png" />
+            <img 
+              src="https://fileuk.netlify.app/64.png" 
+              className="w-full h-full object-cover object-top"
+              referrerPolicy="no-referrer"
+              alt="64 Años"
+            />
+          </picture>
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
         </motion.div>
         
@@ -917,7 +923,7 @@ function InvitationPage() {
       {/* Footer */}
       <footer className="py-12 bg-stone-900 text-stone-500 text-center border-t border-stone-800">
         <p className="font-serif italic text-lg mb-2">"La vida es mejor cuando la celebramos juntos"</p>
-        <p className="text-xs uppercase tracking-widest">© 2026 • Invitación Creada con Amor</p>
+        <p className="text-xs uppercase tracking-widest">© 2026 • Invitación Creada por Gerito</p>
       </footer>
 
       {/* Hotel Modal */}
