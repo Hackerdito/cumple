@@ -691,7 +691,7 @@ function InvitationPage() {
             >
               <div className="text-center mb-12">
                 <h2 className="font-display text-4xl md:text-5xl mb-4">Confirma tu Asistencia</h2>
-                <p className="text-stone-400">Por favor, confirma antes del 1 de julio.</p>
+                <p className="text-stone-400">Por favor, apóyame con tu confirmación antes del 1 de julio.</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
