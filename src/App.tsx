@@ -166,7 +166,8 @@ const galleryImages = [
   "https://fileuk.netlify.app/f_8.png",
   "https://fileuk.netlify.app/f_9.png",
   "https://fileuk.netlify.app/f_10.png",
-  "https://fileuk.netlify.app/f_11.png"
+  "https://fileuk.netlify.app/f_11.png",
+  "https://fileuk.netlify.app/f_12.png"
 ];
 
 const PhotoPile = () => {
