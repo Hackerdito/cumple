@@ -729,9 +729,9 @@ function InvitationPage() {
                       className="w-full bg-stone-700 border-none rounded-xl px-6 py-4 appearance-none focus:ring-2 focus:ring-stone-500 transition-all outline-none"
                     >
                       <option value="Ninguno">No necesito hotel</option>
-                      <option value="El Santuario">El Santuario</option>
-                      <option value="Posada del Sol">Posada del Sol</option>
-                      <option value="Bosque Azul">Bosque Azul</option>
+                      <option value="Hotel La Terracita">Hotel La Terracita</option>
+                      <option value="Hotel Real del Campanario">Hotel Real del Campanario</option>
+                      <option value="Hotel del Valle">Hotel del Valle</option>
                     </select>
                   </div>
                 </div>
