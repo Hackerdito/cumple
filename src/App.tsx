@@ -69,7 +69,7 @@ const HotelCard = ({ name, description, image, price, onClick }: { name: string;
     <div className="p-6">
       <h3 className="font-display text-xl mb-2 text-stone-800">{name}</h3>
       <p className="text-stone-600 text-sm leading-relaxed">{description}</p>
-      <button onClick={onClick} className="mt-4 text-stone-800 font-semibold text-sm flex items-center gap-2 hover:gap-3 transition-all">
+      <button onClick={onClick} className="mt-6 w-full py-3 bg-stone-800 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:bg-stone-900 transition-all">
         <Info className="w-4 h-4" /> Ver más
       </button>
     </div>
@@ -106,7 +106,7 @@ const hotelsData = [
     ]
   },
   {
-    name: "Real del Campanario",
+    name: "Hotel Real del Campanario",
     description: "Excelente opción con todas las comodidades para tu estancia.",
     image: "https://anunciantes.mexicodesconocido.com.mx/storage/6cU5PChxMJiU3fPJLssBDgvtLJGr6WsT5JncE5fR.jpg",
     price: "Desde $1,200",
@@ -165,7 +165,8 @@ const galleryImages = [
   "https://fileuk.netlify.app/f_7.png",
   "https://fileuk.netlify.app/f_8.png",
   "https://fileuk.netlify.app/f_9.png",
-  "https://fileuk.netlify.app/f_10.png"
+  "https://fileuk.netlify.app/f_10.png",
+  "https://fileuk.netlify.app/f_11.png"
 ];
 
 const PhotoPile = () => {
@@ -268,7 +269,7 @@ function InvitationPage() {
   const event = {
     title: "Mi Fiesta de 64 Años",
     description: "¡Te espero para celebrar mis 64 años!",
-    location: "Hacienda Los Olivos, Valle de Bravo",
+    location: "La Casa de la Cantera",
     startTime: "20260718T160000",
     endTime: "20260718T210000"
   };
@@ -495,8 +496,8 @@ function InvitationPage() {
             transition={{ delay: 0.5 }}
             className="flex flex-col items-center"
           >
-            <span className="text-lg md:text-xl text-white/90 font-light mb-2">
-              Estás invitado a celebrar
+            <span className="text-xl md:text-2xl text-white/90 font-light mb-2">
+              Es un gran gusto poderte invitar a celebrar
             </span>
             <h1 className="font-display text-[5.5rem] leading-[0.9] md:text-9xl text-white mb-10">
               <span className="italic">Mis</span> 64<br/>Años
@@ -574,7 +575,7 @@ function InvitationPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="space-y-8 text-lg md:text-2xl text-stone-700 font-light leading-relaxed tracking-wide"
+            className="space-y-8 text-xl md:text-2xl text-stone-700 font-light leading-relaxed tracking-wide"
           >
             <p>
               Cumplir 64 años es un motivo de alegría y gratitud.
@@ -583,10 +584,10 @@ function InvitationPage() {
               Ha sido un camino lleno de experiencias, retos y sueños que siguen vivos.
             </p>
             <p>
-              Hoy quiero agradecer a mi familia, amigos y seres queridos por acompañarme en cada etapa de la vida.
+              Hoy quiero agradecer a mi familia, amigos y seres queridos, por acompañarme en cada etapa de la vida.
             </p>
             <p>
-              Nada me haría más feliz que celebrar este momento especial junto a ustedes.
+              Nada me haría más feliz, que celebrar este momento especial junto a ustedes.
             </p>
           </motion.div>
         </div>
@@ -602,13 +603,13 @@ function InvitationPage() {
             </div>
             <h2 className="font-display text-4xl md:text-5xl mb-6 text-stone-800 flex flex-col gap-2">
               <span className="text-2xl md:text-3xl text-stone-500 font-serif italic">Salón</span>
-              <span>La casa de la cantera</span>
+              <span>La Casa de la Cantera</span>
             </h2>
-            <div className="flex flex-col gap-4 text-stone-600 mb-8 font-serif text-lg italic">
+            <div className="flex flex-col gap-4 text-stone-600 mb-8 font-serif text-xl italic">
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 mt-1 shrink-0" />
                 <div className="space-y-4">
-                  <p>La recepción dará inicio a partir de las 15:30 horas. Será un gusto compartir una tarde llena de alegría,</p>
+                  <p>La recepción dará inicio a partir de las 15:30 horas. Será un gusto compartir una tarde llena de alegría.</p>
                 </div>
               </div>
             </div>
@@ -636,7 +637,7 @@ function InvitationPage() {
           <div className="order-1 md:order-2 rounded-3xl overflow-hidden shadow-2xl h-[400px] bg-stone-200">
             <img 
               src="https://fileuk.netlify.app/Salon.png" 
-              alt="Salón La casa de la cantera" 
+              alt="Salón La Casa de la Cantera" 
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
@@ -650,13 +651,13 @@ function InvitationPage() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 text-stone-500 mb-4">
               <Hotel className="w-4 h-4" />
-              <span className="uppercase tracking-widest text-xs font-bold">Hospedaje</span>
+              <span className="uppercase tracking-widest text-xs font-bold">Hoteles</span>
             </div>
-            <h2 className="font-display text-4xl md:text-5xl text-stone-800">¿Dónde Quedarse?</h2>
-            <p className="text-stone-500 mt-4 max-w-2xl mx-auto">
-              Hemos seleccionado las mejores opciones cercanas para que disfrutes la fiesta sin preocupaciones.
+            <h2 className="font-display text-4xl md:text-5xl text-stone-800">¿Dónde hospedarte?</h2>
+            <p className="text-stone-500 mt-4 max-w-2xl mx-auto text-lg">
+              Hemos seleccionado las opciones más cercanas, para que disfrutes la fiesta sin preocupaciones.
               <br/><br/>
-              <span className="text-sm italic">Nota: Estas son solo sugerencias por su cercanía al salón. Siéntete libre de elegir el hotel de tu preferencia.</span>
+              <span className="text-sm md:text-base italic">Nota: Las siguientes alternativas son únicamente sugerencias por su cercanía al salón de eventos. Siéntete libre de elegir el hotel de tu preferencia.</span>
             </p>
           </div>
           
